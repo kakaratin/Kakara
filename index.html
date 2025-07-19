@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📱 TikTok Downloader</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #000;
+    }
+    input, button {
+      padding: 12px;
+      margin: 10px 0;
+      width: 90%;
+      max-width: 400px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #000;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background-color: #222;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #000;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 15px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    video {
+      max-width: 100%;
+      margin-top: 10px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    a {
+      display: inline-block;
+      margin-top: 10px;
+      color: #000;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>📱 TikTok Video Downloader</h1>
+  <p>Paste any TikTok video URL:</p>
+  <input type="text" id="tiktokUrl" placeholder="https://tiktok.com/ @user/video/..." />
+  <br />
+  <button onclick="downloadVideo()">Download</button>
+  <div id="result"></div>
+
+  <script>
+    function normalizeTikTokUrl(input) {
+      // Remove extra spaces
+      let url = input.trim();
+
+      // Check if it's a valid TikTok URL
+      const tiktokRegex = /tiktok\.com/i;
+      if (!tiktokRegex.test(url)) {
+        throw new Error("Please enter a valid TikTok URL.");
+      }
+
+      // If it's a shortened link like vt.tiktok.com, return as-is
+      if (url.startsWith("https://vt.tiktok.com/ ")) {
+        return url;
+      }
+
+      // Force HTTPS and www if missing
+      if (!url.startsWith("http")) {
+        url = "https://" + url;
+      }
+
+      // Standardize to www.tiktok.com
+      url = url.replace("m.tiktok.com", "www.tiktok.com");
+      url = url.replace("tiktok.com", "www.tiktok.com");
+
+      return url;
+    }
+
+    async function downloadVideo() {
+      const input = document.getElementById("tiktokUrl").value;
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = `<div class="loader"></div> Fetching video...`;
+
+      try {
+        const cleanUrl = normalizeTikTokUrl(input);
+        const response = await fetch(`https://api.tikdown.org/video?url=${encodeURIComponent(cleanUrl)}`);
+        const data = await response.json();
+
+        if (data && data.video && data.video.no_watermark) {
+          const downloadUrl = data.video.no_watermark;
+          resultDiv.innerHTML = `
+            <p>✅ Video found!</p>
+            <a href="${downloadUrl}" download>📥 Download No-Watermark Video</a>
+            <br><br>
+            <video controls>
+              <source src="${downloadUrl}" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          `;
+        } else {
+          resultDiv.innerHTML = "❌ Could not find a downloadable version.";
+        }
+      } catch (error) {
+        console.error(error);
+        resultDiv.innerHTML = `⚠️ ${error.message || "Error fetching video."}`;
+      }
+    }
+  </script>
+</body>
+</html>
