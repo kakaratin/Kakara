@@ -74,29 +74,16 @@
 
   <script>
     function normalizeTikTokUrl(input) {
-      // Remove extra spaces
       let url = input.trim();
-
-      // Check if it's a valid TikTok URL
       const tiktokRegex = /tiktok\.com/i;
       if (!tiktokRegex.test(url)) {
         throw new Error("Please enter a valid TikTok URL.");
       }
-
-      // If it's a shortened link like vt.tiktok.com, return as-is
-      if (url.startsWith("https://vt.tiktok.com/ ")) {
-        return url;
-      }
-
-      // Force HTTPS and www if missing
       if (!url.startsWith("http")) {
         url = "https://" + url;
       }
-
-      // Standardize to www.tiktok.com
       url = url.replace("m.tiktok.com", "www.tiktok.com");
       url = url.replace("tiktok.com", "www.tiktok.com");
-
       return url;
     }
 
@@ -107,7 +94,7 @@
 
       try {
         const cleanUrl = normalizeTikTokUrl(input);
-        const response = await fetch(`https://api.tikdown.org/video?url=${encodeURIComponent(cleanUrl)}`);
+        const response = await fetch(`https://api.tiktokdownload.online/?url=${encodeURIComponent(cleanUrl)}`);
         const data = await response.json();
 
         if (data && data.video && data.video.no_watermark) {
